@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
-#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
-
 #include "framework/test_subscriber.hpp"
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "model/permissions.hpp"
+#include "model/generators/transaction_generator.hpp"
+#include "model/generators/query_generator.hpp"
+#include "model/generators/command_generator.hpp"
 #include "model/queries/responses/account_assets_response.hpp"
 #include "model/queries/responses/account_response.hpp"
 #include "model/queries/responses/asset_response.hpp"
@@ -1097,7 +1099,6 @@ TEST_F(GetRolePermissionsTest, InValidCaseNoPermissions) {
   ASSERT_EQ(cast_resp->reason, ErrorResponse::STATEFUL_INVALID);
 }
 
-
 /**
  * @given initialized storage,  permission to read all roles, no role exist
  * @when get system roles
@@ -1113,4 +1114,49 @@ TEST_F(GetRolePermissionsTest, InValidCaseNoRole) {
   auto response = validateAndExecute();
   auto cast_resp = std::static_pointer_cast<ErrorResponse>(response);
   ASSERT_EQ(cast_resp->reason, ErrorResponse::NO_ROLES);
+}
+
+/// --------- Get Account Transactions -------------
+class GetAccountTransactions : public QueryValidateExecuteTest {
+public:
+  void SetUp() override {
+    QueryValidateExecuteTest::SetUp();
+    qry = std::make_shared<GetAccountTransactions>();
+    qry->creator_account_id = admin_id;
+    qry->account_id = account_id;
+    query = qry;
+    role_permissions = {can_get_my_acc_txs};
+
+    using generators::TransactionGenerator;
+    using generators::CommandGenerator;
+    transactions =
+      TransactionGenerator().generateTransaction(
+        admin_id, 0,
+        {CommandGenerator().generateAddAssetQuantity(
+          account_id, asset_id, iroha::Amount(100, 2))});
+  }
+  std::vector<Transaction> transactions;
+  std::shared_ptr<GetAccountTransactions> qry;
+};
+
+/**
+ * @given MockBlockQuery is scheduled to return a transaction
+ *        which creator ACCOUNT_ID
+ * @when executes query processor
+ * @then returns the inserted transaction
+ */
+TEST_F(QueryExecutor, get_account_transactions) {
+  EXPECT_CALL(*block_queries, getAccountTransactions(ACCOUNT_ID, NO_PAGER))
+    .WillRepeatedly(Return(rxcpp::observable<>::iterate(transactions)));
+
+  auto query = QueryGenerator().generateGetAccountTransactions(
+    0, ADMIN_ID, 0, ACCOUNT_ID, NO_PAGER);
+  ASSERT_TRUE(query.has_value());
+
+  auto response = query_proccesor.execute(*query);
+  auto cast_resp = std::dynamic_pointer_cast<TransactionsResponse>(response);
+  ASSERT_TRUE(cast_resp);
+  auto wrapper =
+    make_test_subscriber<EqualToList>(cast_resp->transactions, txs);
+  ASSERT_TRUE(wrapper.subscribe().validate());
 }
