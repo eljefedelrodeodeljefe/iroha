@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include "model/converters/pb_common.hpp"
 #include "model/converters/pb_query_factory.hpp"
 #include <queries.pb.h>
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
@@ -52,20 +53,6 @@ namespace iroha {
         serializers_[typeid(GetAssetInfo)] =
             &PbQueryFactory::serializeGetAssetInfo;
         serializers_[typeid(GetRoles)] = &PbQueryFactory::serializeGetRoles;
-      }
-
-      // Specific deserializer
-      model::Pager PbQueryFactory::deserializePager(
-          const protocol::Pager &pb_pager) const {
-        model::Pager pager;
-        if (const auto byte_tx_hash =
-          iroha::hexstringToBytestring(pb_pager.tx_hash())) {
-          pager.tx_hash.from_string(*byte_tx_hash);
-        } else {
-          pager.tx_hash.fill(0);
-        }
-        pager.limit = static_cast<decltype(pager.limit)>(pb_pager.limit());
-        return pager;
       }
 
       optional_ptr<model::Query> PbQueryFactory::deserialize(
@@ -243,9 +230,7 @@ namespace iroha {
         auto pb_query_mut =
             pb_query.mutable_payload()->mutable_get_account_transactions();
         pb_query_mut->set_account_id(tmp->account_id);
-        auto pb_pager = pb_query_mut->mutable_pager();
-        pb_pager->set_tx_hash(tmp->pager.tx_hash.to_hexstring());
-        pb_pager->set_limit(tmp->pager.limit);
+        *pb_query_mut->mutable_pager() = serializePager(tmp->pager);
         return pb_query;
       }
 
