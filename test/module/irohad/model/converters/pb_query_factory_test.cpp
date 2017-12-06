@@ -17,6 +17,7 @@
 
 #include <gtest/gtest.h>
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
+#include "model/converters/pb_common.hpp"
 #include "model/converters/pb_query_factory.hpp"
 #include "model/generators/query_generator.hpp"
 
@@ -138,6 +139,19 @@ TEST(PbQueryFactoryTest, get_role_permissions){
 TEST(PbQueryFactoryTest, get_asset_info){
   auto query = QueryGenerator{}.generateGetAssetInfo();
   runQueryTest(query);
+}
+
+/**
+ * @given Model Pager
+ * @when serialize to proto and deserialize it.
+ * @then Validate pager is equal to original type
+ */
+TEST(PbQueryFactoryTest, SerializePager) {
+  decltype(std::declval<Pager>().tx_hash) tx_hash;
+  tx_hash.fill(1);
+  const auto pager = Pager{iroha::hash256_t{}, 1};
+  const auto des_pager = deserializePager(serializePager(pager));
+  ASSERT_EQ(pager, des_pager);
 }
 
 /**
