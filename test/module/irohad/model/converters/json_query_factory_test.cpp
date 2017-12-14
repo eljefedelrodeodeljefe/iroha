@@ -277,14 +277,17 @@ TEST(QuerySerializerTest, get_role_permissions){
 }
 
 /**
- * @given Random pager value
- * @when serialize it then deserialize it
- * @then Validate random pager value is equal to the expected value.
+ * Test model for SerializePager
  */
 struct TestPagerModel {
   Pager pager{};
 };
 
+/**
+ * @given Random pager value
+ * @when serialize it then deserialize it
+ * @then Validate random pager value is equal to the expected value.
+ */
 TEST(QuerySerializerTest, SerializePager) {
   JsonQueryFactory queryFactory;
   decltype(std::declval<Pager>().tx_hash) tx_hash;
