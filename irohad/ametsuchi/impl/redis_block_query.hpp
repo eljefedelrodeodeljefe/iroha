@@ -74,10 +74,12 @@ namespace iroha {
           const std::string &hash);
 
       /**
-       * @tparam CommandType
-       * @tparam Predicate
-       * @param command
-       * @param predicate
+       * @tparam CommandType - expected command type: TransferAsset or
+       * AddAssetQuantity
+       * @tparam Predicate - type of predicate (usually lambda, can be induced)
+       * @param command - target command such that we want to know it's valid.
+       * @param predicate - predicate function to know it's valid in case the
+       * type matches.
        * @return true if CommandType matches the command and command satisfies
        * predicate
        */

@@ -52,20 +52,6 @@ namespace iroha {
         serializers_[typeid(GetRoles)] = &PbQueryFactory::serializeGetRoles;
       }
 
-      // Specific deserializer
-      model::Pager PbQueryFactory::deserializePager(
-        const protocol::Pager &pb_pager) const {
-        model::Pager pager;
-        if (const auto byte_tx_hash =
-          iroha::hexstringToBytestring(pb_pager.tx_hash())) {
-          pager.tx_hash.from_string(*byte_tx_hash);
-        } else {
-          pager.tx_hash.fill(0);
-        }
-        pager.limit = static_cast<decltype(pager.limit)>(pb_pager.limit());
-        return pager;
-      }
-
       optional_ptr<model::Query> PbQueryFactory::deserialize(
           const protocol::Query &pb_query) const {
         std::shared_ptr<model::Query> val;

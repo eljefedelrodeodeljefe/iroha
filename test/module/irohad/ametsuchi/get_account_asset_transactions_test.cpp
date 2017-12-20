@@ -194,12 +194,12 @@ TEST_F(GetAccountAssetTransactionsTest, PartsOfTxsWhenPagerLimit) {
  *
  * @given StorageImpl
  * @when (account_id: alice@domain1, asset_id: [irh#domain], pager: {tx_hash:
- * {}, limit: 100})
+ * {}, limit: MAX_PAGER_LIMIT})
  * @then All matched transactions can be retrieved.
  */
 TEST_F(GetAccountAssetTransactionsTest,
        AllTxsWhenInsertedTxsIsLessThanPagerLimit) {
-  const auto pager = Pager{iroha::hash256_t{}, 100};
+  const auto pager = Pager{iroha::hash256_t{}, Pager::MAX_PAGER_LIMIT};
 
   auto wrapper = make_test_subscriber<EqualToList>(
       blocks->getAccountAssetTransactions(ALICE_ID, {IRH_ASSET_ID}, pager),
@@ -212,13 +212,13 @@ TEST_F(GetAccountAssetTransactionsTest,
  *
  * @given StorageImpl
  * @when (account_id: alice@domain1, asset_id: [irh#domain, moeka#domain],
- *        pager: {tx_hash: {}, limit: 100})
+ *        pager: {tx_hash: {}, limit: MAX_PAGER_LIMIT})
  * @then All matched transactions can be retrieved.
  * @note account id matches either txs which have TransferAsset's source or
  * destination id.
  */
 TEST_F(GetAccountAssetTransactionsTest, MultipleAssetId) {
-  const auto pager = Pager{iroha::hash256_t{}, 100};
+  const auto pager = Pager{iroha::hash256_t{}, Pager::MAX_PAGER_LIMIT};
 
   auto wrapper = make_test_subscriber<EqualToList>(
       blocks->getAccountAssetTransactions(
@@ -232,13 +232,13 @@ TEST_F(GetAccountAssetTransactionsTest, MultipleAssetId) {
  *
  * @given StorageImpl
  * @when (account_id: alice@domain1, asset_id: [irh#domain1],
- * pager: {tx_hash: hash(given_txs[2]), limit: 100})
+ * pager: {tx_hash: hash(given_txs[2]), limit: MAX_PAGER_LIMIT})
  * @then Transaction 0 can be retrieved.
  * @note The transaction of tx_hash is excluded.
  *       Retrieving transactions from newer to older transactions.
  */
 TEST_F(GetAccountAssetTransactionsTest, SpecificPagerTxHash) {
-  const auto pager = Pager{iroha::hash(given_txs[2]), 100};
+  const auto pager = Pager{iroha::hash(given_txs[2]), Pager::MAX_PAGER_LIMIT};
 
   auto wrapper1 = make_test_subscriber<EqualToList>(
       blocks->getAccountAssetTransactions(ALICE_ID, {IRH_ASSET_ID}, pager),
@@ -251,11 +251,11 @@ TEST_F(GetAccountAssetTransactionsTest, SpecificPagerTxHash) {
  *
  * @given StorageImpl
  * @when (account_id: alice@domain1, asset_id: [],
- * pager: {tx_hash: {}, limit: 100})
+ * pager: {tx_hash: {}, limit: MAX_PAGER_LIMIT})
  * @then No transactions can be retrieved.
  */
 TEST_F(GetAccountAssetTransactionsTest, EmptyAssetId) {
-  const auto pager = Pager{iroha::hash256_t{}, 100};
+  const auto pager = Pager{iroha::hash256_t{}, Pager::MAX_PAGER_LIMIT};
 
   auto wrapper = make_test_subscriber<CallExact>(
       blocks->getAccountAssetTransactions(ALICE_ID, {}, pager), 0);
@@ -271,7 +271,7 @@ TEST_F(GetAccountAssetTransactionsTest, EmptyAssetId) {
  */
 TEST_F(GetAccountAssetTransactionsTest, EmptyStorage) {
   storage->dropStorage();
-  const auto pager = Pager{iroha::hash256_t{}, 100};
+  const auto pager = Pager{iroha::hash256_t{}, Pager::MAX_PAGER_LIMIT};
 
   auto wrapper = make_test_subscriber<CallExact>(
       blocks->getAccountAssetTransactions(ALICE_ID, {IRH_ASSET_ID}, pager), 0);

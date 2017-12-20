@@ -156,7 +156,6 @@ namespace iroha {
         const std::string &account_id,
         const std::vector<std::string> &assets_id,
         const std::shared_ptr<iroha::model::Command> &command) const {
-      // TODO 28/11/17 motxx - Use template from isCommandValid()
       auto predicate_producer = [&](const auto &check_target_id) {
         return [&check_target_id, &assets_id](const auto &com) {
           return check_target_id(com)
