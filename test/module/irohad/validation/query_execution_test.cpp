@@ -21,6 +21,7 @@
 #include "model/generators/transaction_generator.hpp"
 #include "model/generators/query_generator.hpp"
 #include "model/generators/command_generator.hpp"
+#include "model/queries/pager.hpp"
 #include "model/queries/responses/account_assets_response.hpp"
 #include "model/queries/responses/account_response.hpp"
 #include "model/queries/responses/asset_response.hpp"
@@ -583,7 +584,8 @@ TEST_F(GetAccountTransactionsTest, MyAccountValidCase) {
 
   txs_observable = getDefaultTransactions(admin_id);
 
-  EXPECT_CALL(*block_query, getAccountTransactions(admin_id))
+  EXPECT_CALL(*block_query,
+              getAccountTransactions(admin_id, model::Pager::MAX_PAGER_LIMIT))
       .WillOnce(Return(txs_observable));
   auto response = validateAndExecute();
   auto cast_resp = std::static_pointer_cast<TransactionsResponse>(response);
