@@ -236,9 +236,9 @@ namespace shared_model {
             const interface::types::AccountIdType &account_id) const {
           std::regex e(R"([a-z]{1,9}\@[a-z]{1,9})");
           if (not std::regex_match(account_id, e)) {
-            // reason.second.push_back("Wrongly formed account_id");
-            reason.second.push_back("Wrongly formed account_id: \"" + account_id + "\"");
-
+            auto error_message =
+                "Wrongly formed account_id: \"" + account_id + "\"";
+            reason.second.push_back(error_message);
           }
         }
 

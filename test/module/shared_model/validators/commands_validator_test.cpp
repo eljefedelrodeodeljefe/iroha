@@ -303,7 +303,7 @@ TEST(CommandsValidatorTest, StatelessInvalidMessageContainsValue) {
         detail::make_polymorphic<proto::Transaction>(tx));
       auto &expected_message = field_error_message.at(field->name());
       const auto &command_name = command_field->message_type()->name();
-      auto message_list = answer.getReasonsMap()[command_name];
+      auto message_list = answer.getReasonsMap().at(command_name);
       EXPECT_NE(
         std::find(message_list.begin(), message_list.end(), expected_message),
         message_list.end()
