@@ -231,13 +231,19 @@ namespace shared_model {
         }
 
        private:
+        std::string generate_error(const std::string &message,
+                                   const std::string &value) const {
+          return (boost::format("%s: \"%s\"") % message % value).str();
+        }
+
         void validateAccountId(
             ReasonsGroupType &reason,
             const interface::types::AccountIdType &account_id) const {
           std::regex e(R"([a-z]{1,9}\@[a-z]{1,9})");
           if (not std::regex_match(account_id, e)) {
             auto error_message =
-                "Wrongly formed account_id: \"" + account_id + "\"";
+                generate_error("Wrongly formed account_id",
+                               static_cast<std::string>(account_id));
             reason.second.push_back(error_message);
           }
         }
@@ -247,7 +253,9 @@ namespace shared_model {
             const interface::types::AssetIdType &asset_id) const {
           std::regex e(R"([a-z]{1,9}\#[a-z]{1,9})");
           if (not std::regex_match(asset_id, e)) {
-            reason.second.push_back("Wrongly formed asset_id");
+            auto error_message = generate_error(
+                "Wrongly formed asset_id", static_cast<std::string>(asset_id));
+            reason.second.push_back(error_message);
           }
         }
 
@@ -259,7 +267,10 @@ namespace shared_model {
         void validatePubkey(ReasonsGroupType &reason,
                             const interface::types::PubkeyType &pubkey) const {
           if (pubkey.blob().size() != 32) {
-            reason.second.push_back("Public key has wrong size");
+            auto error_message =
+                generate_error("Public key has wrong size",
+                               std::to_string(pubkey.blob().size()));
+            reason.second.push_back(error_message);
           }
         }
 
@@ -272,7 +283,10 @@ namespace shared_model {
                 ")|((2[0-4]"
                 "\\d)|(25[0-5])))");
             if (not std::regex_match(address, ipRegex)) {
-              reason.second.push_back("Wrongly formed PeerAddress");
+              auto error_message =
+                  generate_error("Wrongly formed PeerAddress",
+                                 static_cast<std::string>(address));
+              reason.second.push_back(error_message);
             }
           }
         }
@@ -281,7 +295,9 @@ namespace shared_model {
                             const interface::types::RoleIdType &role_id) const {
           std::regex e(R"([a-z]{1,9})");
           if (not std::regex_match(role_id, e)) {
-            reason.second.push_back("Wrongly formed role_id");
+            auto error_message = generate_error(
+                "Wrongly formed role_id", static_cast<std::string>(role_id));
+            reason.second.push_back(error_message);
           }
         }
 
@@ -290,7 +306,10 @@ namespace shared_model {
             const interface::types::AccountNameType &account_name) const {
           std::regex e(R"([a-z]{1,9})");
           if (not std::regex_match(account_name, e)) {
-            reason.second.push_back("Wrongly formed account_name");
+            auto error_message =
+                generate_error("Wrongly formed account_name",
+                               static_cast<std::string>(account_name));
+            reason.second.push_back(error_message);
           }
         }
 
@@ -299,7 +318,10 @@ namespace shared_model {
             const interface::types::DomainIdType &domain_id) const {
           std::regex e(R"([a-z]{1,9})");
           if (not std::regex_match(domain_id, e)) {
-            reason.second.push_back("Wrongly formed domain_id");
+            auto error_message =
+                generate_error("Wrongly formed domain_id",
+                               static_cast<std::string>(domain_id));
+            reason.second.push_back(error_message);
           }
         }
 
@@ -308,7 +330,10 @@ namespace shared_model {
             const interface::types::AssetNameType &asset_name) const {
           std::regex e(R"([a-z]{1,9})");
           if (not std::regex_match(asset_name, e)) {
-            reason.second.push_back("Wrongly formed asset_name");
+            auto error_message =
+                generate_error("Wrongly formed asset_name",
+                               static_cast<std::string>(asset_name));
+            reason.second.push_back(error_message);
           }
         }
 
@@ -318,7 +343,9 @@ namespace shared_model {
             const {
           std::regex e(R"([A-Za-z0-9_]{1,})");
           if (not std::regex_match(key, e)) {
-            reason.second.push_back("Wrongly formed key");
+            auto error_message = generate_error("Wrongly formed key",
+                                                static_cast<std::string>(key));
+            reason.second.push_back(error_message);
           }
         }
 
@@ -393,7 +420,10 @@ namespace shared_model {
           const interface::types::AccountIdType &account_id) const {
         std::regex e(R"([a-z]{1,9}\@[a-z]{1,9})");
         if (not std::regex_match(account_id, e)) {
-          reason.second.push_back("Wrongly formed creator_account_id");
+          reason.second.push_back(
+              (boost::format("Wrongly formed creator_account_id: \"%s\"")
+               % static_cast<std::string>(account_id))
+                  .str());
         }
       }
 
