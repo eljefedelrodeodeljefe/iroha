@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#include <cctype>
+#include <iostream>
 #include <gtest/gtest.h>
 #include <boost/range/irange.hpp>
 #include "builders/protobuf/transaction.hpp"
@@ -191,4 +193,125 @@ TEST(CommandsValidatorTest, StatelessInvalidTest) {
   // in total there should be number_of_commands + 1 reasons of bad answer:
   // number_of_commands for each command + 1 for transaction metadata
   ASSERT_EQ(answer.getReasonsMap().size(), desc->field_count() + 1);
+}
+
+/**
+ * @given transaction made of commands with invalid fields
+ * @when commands validation is invoked
+ * @then answer has errors and error message contains value of invalid field
+ */
+TEST(CommandsValidatorTest, StatelessInvalidMessageContainsValue) {
+  // Invalid values for fields in commands
+  std::string valid_account_id = "account";
+  std::string valid_asset_id = "asset#domain";
+  std::string valid_address = "localhost";
+  iroha::protocol::Amount valid_amount;
+  valid_amount.set_precision(2);
+  valid_amount.mutable_value()->set_fourth(1000);
+  auto public_key_size = 32;
+  std::string valid_public_key(public_key_size, '0');
+  std::string valid_role_name = "user";
+  std::string valid_account_name = "admin";
+  std::string valid_domain_id = "ru";
+  std::string valid_asset_name = "asset";
+  uint8_t valid_precision = 42;
+  iroha::protocol::RolePermission valid_role_permission =
+      iroha::protocol::RolePermission::can_append_role;
+  iroha::protocol::GrantablePermission valid_grantable_permission =
+      iroha::protocol::GrantablePermission::can_add_my_signatory;
+  std::string valid_detail_key = "key";
+  uint8_t valid_quorum = 2;
+  auto valid_created_time = iroha::time::now();
+
+
+  std::unordered_map<std::string, std::string> field_error_message;
+  field_error_message["account_id"] = R"(Wrongly formed account_id: ")" + valid_account_id + "\"";
+
+  // Generate protobuf reflection setter for given type and value
+  auto setField = [&](auto setter) {
+    return [setter](const auto &value) {
+      return [setter, &value](auto refl, auto msg, auto field) {
+        (refl->*setter)(msg, field, value);
+      };
+    };
+  };
+
+  auto setString = setField(&google::protobuf::Reflection::SetString);
+  auto setUInt32 = setField(&google::protobuf::Reflection::SetUInt32);
+  auto addEnum = setField(&google::protobuf::Reflection::AddEnumValue);
+  auto setEnum = setField(&google::protobuf::Reflection::SetEnumValue);
+
+  // List all used fields in commands
+  std::unordered_map<std::string,
+                     std::function<void(
+                         const google::protobuf::Reflection *,
+                         google::protobuf::Message *,
+                         const google::protobuf::FieldDescriptor *)>>
+      field_setters;
+  for (const auto &id : {"account_id", "src_account_id", "dest_account_id"}) {
+    field_setters[id] = setString(valid_account_id);
+  }
+  for (const auto &id : {"peer_key", "public_key", "main_pubkey"}) {
+    field_setters[id] = setString(valid_public_key);
+  }
+  for (const auto &id : {"role_name", "default_role"}) {
+    field_setters[id] = setString(valid_role_name);
+  }
+  field_setters["asset_id"] = setString(valid_asset_id);
+  field_setters["address"] = setString(valid_address);
+  field_setters["account_name"] = setString(valid_account_name);
+  field_setters["domain_id"] = setString(valid_domain_id);
+  field_setters["asset_name"] = setString(valid_asset_name);
+  field_setters["precision"] = setUInt32(valid_precision);
+  field_setters["permissions"] = addEnum(valid_role_permission);
+  field_setters["permission"] = setEnum(valid_grantable_permission);
+  field_setters["key"] = setString(valid_detail_key);
+  field_setters["value"] = setString("");
+  field_setters["quorum"] = setUInt32(valid_quorum);
+  field_setters["description"] = setString("");
+  field_setters["amount"] = [&](auto refl, auto msg, auto field) {
+    refl->MutableMessage(msg, field)->CopyFrom(valid_amount);
+  };
+
+  iroha::protocol::Transaction tx = generateEmptyTransaction();
+  tx.mutable_payload()->set_creator_account_id(valid_account_id);
+  tx.mutable_payload()->set_created_time(valid_created_time);
+  auto payload = tx.mutable_payload();
+
+  // Iterate through all command types, filling command fields with valid values
+  auto desc = iroha::protocol::Command::descriptor();
+  boost::for_each(boost::irange(0, desc->field_count()), [&](auto i) {
+    // Get field descriptor for concrete command (add asset quantity, etc.)
+    auto command_field = desc->field(i);
+    // Add new command to transaction
+    auto command_variant = payload->add_commands();
+    // Set concrete type for new command
+    auto command = command_variant->GetReflection()->MutableMessage(
+        command_variant, command_field);
+
+    // Iterate through all fields of concrete command
+    auto command_desc = command->GetDescriptor();
+    boost::for_each(boost::irange(0, command_desc->field_count()), [&](auto i) {
+      // Get field descriptor for concrete command field (account_id, etc.)
+      auto field = command_desc->field(i);
+
+      // Will throw key exception in case new field is added
+      field_setters.at(field->name())(command->GetReflection(), command, field);
+
+      shared_model::validation::CommandsValidator commands_validator;
+      auto answer = commands_validator.validate(
+        detail::make_polymorphic<proto::Transaction>(tx));
+      auto &expected_message = field_error_message.at(field->name());
+      const auto &command_name = command_field->message_type()->name();
+      auto message_list = answer.getReasonsMap()[command_name];
+      EXPECT_NE(
+        std::find(message_list.begin(), message_list.end(), expected_message),
+        message_list.end()
+      );
+    });
+  });
+
+
+
+
 }
