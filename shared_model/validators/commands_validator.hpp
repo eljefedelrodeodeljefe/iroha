@@ -45,23 +45,25 @@ namespace shared_model {
             const detail::PolymorphicWrapper<interface::AddAssetQuantity> &aaq)
             const {
           ReasonsGroupType reason;
-          reason.first = "AddAssetQuantity";
+          reason.first = generate_command_string("AddAssetQuantity");
 
           validateAccountId(reason, aaq->accountId());
           validateAssetId(reason, aaq->assetId());
           validateAmount(reason, aaq->amount());
 
+          command_counter++;
           return reason;
         }
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::AddPeer> &ap) const {
           ReasonsGroupType reason;
-          reason.first = "AddPeer";
+          reason.first = generate_command_string("AddPeer");
 
           validatePubkey(reason, ap->peerKey());
           validatePeerAddress(reason, ap->peerAddress());
 
+          command_counter++;
           return reason;
         }
 
@@ -69,22 +71,24 @@ namespace shared_model {
             const detail::PolymorphicWrapper<interface::AddSignatory> &as)
             const {
           ReasonsGroupType reason;
-          reason.first = "AddSignatory";
+          reason.first = generate_command_string("AddSignatory");
 
           validateAccountId(reason, as->accountId());
           validatePubkey(reason, as->pubkey());
 
+          command_counter++;
           return reason;
         }
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::AppendRole> &ar) const {
           ReasonsGroupType reason;
-          reason.first = "AppendRole";
+          reason.first = generate_command_string("AppendRole");
 
           validateAccountId(reason, ar->accountId());
           validateRoleId(reason, ar->roleName());
 
+          command_counter++;
           return reason;
         }
 
@@ -92,11 +96,12 @@ namespace shared_model {
             const detail::PolymorphicWrapper<interface::CreateAccount> &ca)
             const {
           ReasonsGroupType reason;
-          reason.first = "CreateAccount";
+          reason.first = generate_command_string("CreateAccount");
 
           validatePubkey(reason, ca->pubkey());
           validateAccountName(reason, ca->accountName());
 
+          command_counter++;
           return reason;
         }
 
@@ -104,12 +109,13 @@ namespace shared_model {
             const detail::PolymorphicWrapper<interface::CreateAsset> &ca)
             const {
           ReasonsGroupType reason;
-          reason.first = "CreateAsset";
+          reason.first = generate_command_string("CreateAsset");
 
           validateAssetName(reason, ca->assetName());
           validateDomainId(reason, ca->domainId());
           validatePrecision(reason, ca->precision());
 
+          command_counter++;
           return reason;
         }
 
@@ -117,32 +123,35 @@ namespace shared_model {
             const detail::PolymorphicWrapper<interface::CreateDomain> &cd)
             const {
           ReasonsGroupType reason;
-          reason.first = "CreateDomain";
+          reason.first = generate_command_string("CreateDomain");
 
           validateDomainId(reason, cd->domainId());
 
+          command_counter++;
           return reason;
         }
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::CreateRole> &cr) const {
           ReasonsGroupType reason;
-          reason.first = "CreateRole";
+          reason.first = generate_command_string("CreateRole");
 
           validateRoleId(reason, cr->roleName());
           validatePermissions(reason, cr->rolePermissions());
 
+          command_counter++;
           return reason;
         }
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::DetachRole> &dr) const {
           ReasonsGroupType reason;
-          reason.first = "DetachRole";
+          reason.first = generate_command_string("DetachRole");
 
           validateAccountId(reason, dr->accountId());
           validateRoleId(reason, dr->roleName());
 
+          command_counter++;
           return reason;
         }
 
@@ -150,10 +159,11 @@ namespace shared_model {
             const detail::PolymorphicWrapper<interface::GrantPermission> &gp)
             const {
           ReasonsGroupType reason;
-          reason.first = "GrantPermission";
+          reason.first = generate_command_string("GrantPermission");
 
           validateAccountId(reason, gp->accountId());
 
+          command_counter++;
           return reason;
         }
 
@@ -161,22 +171,25 @@ namespace shared_model {
             const detail::PolymorphicWrapper<interface::RemoveSignatory> &rs)
             const {
           ReasonsGroupType reason;
-          reason.first = "RemoveSignatory";
+          reason.first = generate_command_string("RemoveSignatory");
 
           validateAccountId(reason, rs->accountId());
           validatePubkey(reason, rs->pubkey());
 
+          command_counter++;
           return reason;
         }
+
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::RevokePermission> &rp)
             const {
           ReasonsGroupType reason;
-          reason.first = "RevokePermission";
+          reason.first = generate_command_string("RevokePermission");
 
           validateAccountId(reason, rp->accountId());
           validatePermission(reason, rp->permissionName());
 
+          command_counter++;
           return reason;
         }
 
@@ -184,22 +197,24 @@ namespace shared_model {
             const detail::PolymorphicWrapper<interface::SetAccountDetail> &sad)
             const {
           ReasonsGroupType reason;
-          reason.first = "SetAccountDetail";
+          reason.first = generate_command_string("SetAccountDetail");
 
           validateAccountId(reason, sad->accountId());
           validateAccountDetailKey(reason, sad->key());
 
+          command_counter++;
           return reason;
         }
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::SetQuorum> &sq) const {
           ReasonsGroupType reason;
-          reason.first = "SetQuorum";
+          reason.first = generate_command_string("SetQuorum");
 
           validateAccountId(reason, sq->accountId());
           validateQuorum(reason, sq->newQuorum());
 
+          command_counter++;
           return reason;
         }
 
@@ -207,12 +222,13 @@ namespace shared_model {
             const detail::PolymorphicWrapper<interface::SubtractAssetQuantity>
                 &saq) const {
           ReasonsGroupType reason;
-          reason.first = "SubtractAssetQuantity";
+          reason.first = generate_command_string("SubtractAssetQuantity");
 
           validateAccountId(reason, saq->accountId());
           validateAssetId(reason, saq->assetId());
           validateAmount(reason, saq->amount());
 
+          command_counter++;
           return reason;
         }
 
@@ -220,17 +236,26 @@ namespace shared_model {
             const detail::PolymorphicWrapper<interface::TransferAsset> &ta)
             const {
           ReasonsGroupType reason;
-          reason.first = "TransferAsset";
+          reason.first = generate_command_string("TransferAsset");
 
           validateAccountId(reason, ta->srcAccountId());
           validateAccountId(reason, ta->destAccountId());
           validateAssetId(reason, ta->assetId());
           validateAmount(reason, ta->amount());
 
+          command_counter++;
           return reason;
         }
 
        private:
+        mutable int command_counter{0};
+
+        // command string consists of command name
+        // and its number in the transaction
+        std::string generate_command_string(const std::string &command) const {
+          return (boost::format("%s %d") % command % command_counter).str();
+        }
+
         std::string generate_error(const std::string &message,
                                    const std::string &value) const {
           return (boost::format("%s: \"%s\"") % message % value).str();
@@ -395,9 +420,9 @@ namespace shared_model {
           answer.addReason(std::move(tx_reason));
         }
 
+        CommandsValidatorVisitor validator;
         for (auto &command : tx->commands()) {
-          auto reason =
-              boost::apply_visitor(CommandsValidatorVisitor(), command->get());
+          auto reason = boost::apply_visitor(validator, command->get());
           if (not reason.second.empty()) {
             answer.addReason(std::move(reason));
           }
