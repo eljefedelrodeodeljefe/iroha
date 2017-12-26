@@ -52,27 +52,29 @@ class TransactionExample {
         return bs;
     }
 
-    public static String readKeyFromFile(String path) throws IOException {
-        return new String(Files.readAllBytes(Paths.get(path)));
-    }
-
-    public static void main(String[] args) {
-        String adminPub = "", adminPriv = "";
+    public static String readKeyFromFile(String path) {
         try {
-            adminPub = readKeyFromFile("../admin@test.pub");
-            adminPriv = readKeyFromFile("../admin@test.priv");
+            return new String(Files.readAllBytes(Paths.get(path)));
         } catch (IOException e) {
             System.err.println("Unable to read key files.\n " + e);
             System.exit(1);
         }
-        Keypair keys = crypto.convertFromExisting(adminPub, adminPriv);
+        return "";
+    }
+
+    public static void main(String[] args) {
+        Keypair keys = crypto.convertFromExisting(readKeyFromFile("../admin@test.pub"),
+            readKeyFromFile("../admin@test.priv"));
 
         long currentTime = System.currentTimeMillis();
         String creator = "admin@test";
 
+        long startTxCounter = 1, startQueryCounter = 1;
+
         // build transaction (still unsigned)
         UnsignedTx utx = txBuilder.creatorAccountId(creator)
             .createdTime(BigInteger.valueOf(currentTime))
+            .txCounter(BigInteger.valueOf(startTxCounter))
             .createDomain("ru", "user")
             .createAsset("dollar", "ru", (short)2).build();
 
@@ -123,9 +125,10 @@ class TransactionExample {
 
         // query result of transaction we've just sent
         UnsignedQuery uquery = queryBuilder.creatorAccountId(creator)
-                                           .createdTime(BigInteger.valueOf(currentTime))
-                                           .getAssetInfo("dollar#ru")
-                                           .build();
+            .queryCounter(BigInteger.valueOf(startQueryCounter))
+            .createdTime(BigInteger.valueOf(currentTime))
+            .getAssetInfo("dollar#ru")
+            .build();
         ByteVector queryBlob = protoQueryHelper.signAndAddSignature(uquery, keys).blob();
         byte bquery[] = toByteArray(queryBlob);
 
